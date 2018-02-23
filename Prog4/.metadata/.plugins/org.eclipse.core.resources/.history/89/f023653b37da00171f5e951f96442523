@@ -1,0 +1,212 @@
+/*  Jose Carlos Gomez
+    cssc0898
+*/
+
+package data_structures;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.ConcurrentModificationException;
+
+public class Hashtable<K extends Comparable<K>, V> implements DictionaryADT<K, V> {
+	private long modCounter;
+	private int currentSize, maxSize, tableSize;
+	private LinearListADT<DictionaryNode<K, V>>[] list;
+
+	class DictionaryNode<K, V> implements Comparable<DictionaryNode<K, V>> {
+		K key;
+		V value;
+
+		public DictionaryNode(K key, V value) {
+			this.key = key;
+			this.value = value;
+		}
+
+		public int compareTo(DictionaryNode<K, V> node) {
+			return ((Comparable<K>)key).compareTo((K)node.key);
+		}
+	}
+
+	public Hashtable(int size) {
+		maxSize = size;
+		tableSize = (int) (maxSize * 1.3f);
+		list = new LinearList[tableSize];
+		for (int i = 0; i < tableSize; i++)
+			list[i] = new LinearList<DictionaryNode<K, V>>();
+	}
+
+	private int getIndex(K key) {
+		return (key.hashCode() & 0X7FFFFFFF) % tableSize;
+	}
+
+	// Returns true if the dictionary has an object identified by
+	// key in it, otherwise false.
+	public boolean contains(K key) {
+		return list[getIndex(key)].contains(new DictionaryNode<K,V>(key,null));
+	}
+	
+
+	// Adds the given key/value pair to the dictionary. Returns
+	// false if the dictionary is full, or if the key is a duplicate.
+	// Returns true if addition succeeded.
+	public boolean add(K key, V value) {
+		if (contains(key))
+			return false;
+		DictionaryNode<K, V> newNode = new DictionaryNode<K, V>(key, value);
+		list[getIndex(key)].addLast(newNode);
+		currentSize++;
+		modCounter++;
+		return true;
+	}
+
+	// Deletes the key/value pair identified by the key parameter.
+	// Returns true if the key/value pair was found and removed,
+	// otherwise false.
+	public boolean delete(K key) {
+		if(!contains(key))
+			return false;
+		list[getIndex(key)].remove(new DictionaryNode<K,V>(key, null));
+		currentSize--;
+		modCounter++;
+		return true;
+	}
+
+	// Returns the value associated with the parameter key.  Returns
+	// null if the key is not found or the dictionary is empty.
+	public V getValue(K key) {
+		if(isEmpty() || !contains(key))
+			return null;
+		DictionaryNode<K,V> tmp = list[getIndex(key)].find(new DictionaryNode<K,V>(key, key));
+		if(tmp == null)
+			return null;
+		System.out.println(key);
+
+		System.out.println(tmp.key);
+		System.out.println(tmp.value);
+		return tmp.value;
+	}
+
+	// Returns the key associated with the parameter value. Returns
+	// null if the value is not found in the dictionary. If more
+	// than one key exists that matches the given value, returns the
+	// first one found.
+	public K getKey(V value) {
+		if(isEmpty())
+			return null;
+		DictionaryNode<K,V> temp;
+		for(int i = 0; i<tableSize; i++) {
+			Iterator<DictionaryNode<K,V>> itr = list[i].iterator();
+			while(itr.hasNext()) {
+				temp = itr.next();
+				if(((Comparable<V>) temp.value).compareTo(value) == 0)
+					return temp.key;
+			}
+		}
+		return null;
+	}
+
+	public boolean isFull() {
+		return false;
+	}
+
+	public boolean isEmpty() {
+		return currentSize <= 0;
+	}
+
+	public int size() {
+		return currentSize;
+	}
+
+	public void clear() {
+		currentSize = 0;
+		modCounter = 0;
+		for (int i = 0; i < tableSize; i++)
+			list[i].clear();
+
+	}
+
+	public Iterator keys() {
+		return new KeyIteratorHelper();
+	}
+
+	public Iterator values() {
+		return new ValueIteratorHelper();
+	}
+
+	abstract class IteratorHelper<E> implements Iterator<E> {
+		protected DictionaryNode<K, V>[] nodes;
+		protected int idx;
+		protected long modCheck;
+
+		public IteratorHelper() {
+			nodes = new DictionaryNode[currentSize];
+			idx = 0;
+			int j = 0;
+			modCheck = modCounter;
+			for (int i = 0; i < tableSize; i++)
+				for (DictionaryNode n : list[i])
+					nodes[j++] = n;
+			nodes = (DictionaryNode<K, V>[]) ShellSort(nodes);
+		}
+
+		public boolean hasNext() {
+			if (modCheck != modCounter)
+				throw new ConcurrentModificationException();
+			return idx < currentSize;
+		}
+
+		public abstract E next();
+
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+	}
+
+	class KeyIteratorHelper<K> extends IteratorHelper<K> {
+		public KeyIteratorHelper() {
+			super();
+		}
+
+		public K next() {
+			if (!hasNext())
+				throw new NoSuchElementException();
+			return (K) nodes[idx++].key;
+		}
+	}
+
+	class ValueIteratorHelper<V> extends IteratorHelper<V> {
+		public ValueIteratorHelper() {
+			super();
+		}
+
+		public V next() {
+			if (!hasNext())
+				throw new NoSuchElementException();
+			return (V) nodes[idx++].value;
+		}
+	}
+
+	public DictionaryNode<K, V>[] ShellSort(DictionaryNode[] list) {
+		DictionaryNode[] sorted = list;
+		int in, out, h = 1;
+		int size = sorted.length;
+		DictionaryNode<K, V> temp;
+
+		while (h <= size / 3)
+			h = h * 3 + 1;
+		while (h > 0) {
+			for (out = h; out < size; out++) {
+				temp = sorted[out];
+				in = out;
+				while (in > h - 1 && sorted[in - h].compareTo(temp) >= 0) {
+					sorted[in] = sorted[in - h];
+					in -= h;
+				}
+				sorted[in] = temp;
+			}
+			h = (h-1)/3;
+		}
+		return sorted;
+	}
+
+}

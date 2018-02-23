@@ -1,0 +1,19 @@
+import java.util.Iterator;
+import java.io.IOException;
+import java.util.ConcurrentModificationException;
+import data_structures.*;
+
+public class PBT {
+	public static void main(String [] args) {
+        final int SIZE = 1000000;
+        long start, stop;
+        int [] array = new int[SIZE];
+        PhoneBook dictionary = new PhoneBook(SIZE);
+        try {
+        	dictionary.load("data");  
+        }
+        catch(IOException e) {
+    		System.out.println("Error reading file");
+    	}
+	}
+}

@@ -1,0 +1,47 @@
+/*  Jose Carlos Gomez
+    cssc0898
+*/
+
+package data_structures;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.ConcurrentModificationException;
+
+public class Hashtable {
+	private long modCounter;
+	private int currentSize, maxSize, tableSize;
+	private LinearListADT<DictionaryNode<K, V>> [] list;
+
+	class DictionaryNode<K,V> implements Comparable<DictionaryNode<K,V>>{
+		K key;
+		V value;
+		DictionaryNode(K key, V value){
+			this.key = key;
+			this.value = value;
+		}
+		public int compareTo(DictionaryNode<K, V> node) {
+			return key.compareTo(node.key);
+		}
+	}
+	
+	public HashTable(int size) {
+		maxSize = size;
+		tableSize = (int)(maxSize*1.3f);
+		list = new LinearList[tableSize];
+		for(int i = 0; i<tableSize; i++)
+			list[i] = new //not finished
+	}
+	
+	public boolean insert(K key, V value) {
+		if(contains(key)) return false;
+		DictionaryNode newNode = new DictionaryNode<K,V>(Key, Value);
+		list[getIndex(key)].addLast(newNode);
+	}
+	
+	public V getValue(K key) {
+		DictionaryNode<K,V> tmp = list[getIndex(key)].find(new DictionaryNode<K,V>(key, null));
+		if(tmp == null) return null;
+		return tmp.value;
+	}
+}

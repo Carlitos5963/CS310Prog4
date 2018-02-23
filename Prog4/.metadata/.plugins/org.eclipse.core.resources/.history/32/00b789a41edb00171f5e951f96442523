@@ -1,0 +1,144 @@
+/*  Jose Carlos Gomez
+    cssc0898
+*/
+
+import data_structures.*;
+import data_structures.Hashtable.DictionaryNode;
+
+import java.util.Iterator;
+import java.io.*;
+
+public class PhoneBook<K,V> {
+	private DictionaryADT<PhoneNumber,String> phonebook;
+	DictionaryADT<PhoneNumber,String> namebook;
+   
+    // Constructor.  There is no argument-less constructor, or default size
+    public PhoneBook(int maxSize) {
+    	phonebook = new Hashtable<PhoneNumber,String>(maxSize);
+    	namebook = new Hashtable<PhoneNumber,String>(maxSize);
+
+    	
+    }
+       
+    // Reads PhoneBook data from a text file and loads the data into
+    // the PhoneBook.  Data is in the form "key=value" where a phoneNumber
+    // is the key and a name in the format "Last, First" is the value.
+    public void load(String filename) throws IOException {
+    	String line;
+    	FileReader file = new FileReader(filename);
+    	try {
+    		BufferedReader in = new BufferedReader(file);
+    		while((line = in.readLine()) != null) {
+    			PhoneNumber tmp = new PhoneNumber(line.substring(0,12));
+    			String value = line.substring(13);
+    			phonebook.add(tmp, value);
+    		}
+    		in.close();
+    	}
+    	catch(IOException e) {
+    		System.out.println("Error reading file");
+    	}
+    }
+           
+    class Wrapper<K,V> implements Comparable<Wrapper<K,V>>{
+    	K key;
+    	V value;
+    	public Wrapper(K k, V v) {
+    		key = k;
+    		value = v;
+    	}
+    	public int compareTo(Wrapper<K,V> w) {
+    		return ((Comparable<K>) key).compareTo(w.key);
+    	}
+    }
+    
+    // Returns the name associated with the given PhoneNumber, if it is
+    // in the PhoneBook, null if it is not.
+    public String numberLookup(PhoneNumber number) {
+    	if(!phonebook.contains(number) || phonebook.isEmpty()) {
+    		return null;
+    	}
+    	return phonebook.getValue(number).toString();
+    }
+       
+    // Returns the PhoneNumber associated with the given name value.
+    // There may be duplicate values, return the first one found.
+    // Return null if the name is not in the PhoneBook.
+    public PhoneNumber nameLookup(String name) {
+    	return phonebook.getKey(name);
+    }
+       
+    // Adds a new PhoneNumber = name pair to the PhoneBook.  All
+    // names should be in the form "Last, First".
+    // Duplicate entries are *not* allowed.  Return true if the
+    // insertion succeeds otherwise false (PhoneBook is full or
+    // the new record is a duplicate).  Does not change the datafile on disk.
+    public boolean addEntry(PhoneNumber number, String name) {
+    	return phonebook.add(number, name);
+    }
+       
+    // Deletes the record associated with the PhoneNumber if it is
+    // in the PhoneBook.  Returns true if the number was found and
+    // its record deleted, otherwise false.  Does not change the datafile on disk.
+    public boolean deleteEntry(PhoneNumber number) {
+    	return phonebook.delete(number);
+    }
+       
+    // Prints a directory of all PhoneNumbers with their associated
+    // names, in sorted order (ordered by PhoneNumber).
+    public void printAll() {
+    	Iterator<PhoneNumber> itr = phonebook.keys();
+    	PhoneNumber tmp;
+    	while(itr.hasNext()) {
+    		tmp = itr.next();
+    		System.out.println(tmp + ", " + phonebook.getValue(tmp));
+    	}
+    }
+       
+    // Prints all records with the given Area Code in ordered
+    // sorted by PhoneNumber.
+    public void printByAreaCode(String code) {
+    	Iterator<PhoneNumber> itr = phonebook.keys();
+    	PhoneNumber tmp;
+    	while(itr.hasNext()) {
+    		tmp = itr.next();
+    		if(tmp.areaCode.compareTo(code) == 0)
+    			System.out.println(tmp + ", " + phonebook.getValue(tmp));
+    	}
+    }
+   
+    // Prints all of the names in the directory, in sorted order (by name,
+    // not by number).  There may be duplicates as these are the values.       
+    public void printNames() {
+    	int i=0;
+    	String tempList[] = new String[phonebook.size()];
+    	Iterator<V> itr = (Iterator<V>) phonebook.values();
+    		while(itr.hasNext()) {    			
+    			tempList[i++] = (String)itr.next();
+    		}
+    		
+    }
+    
+    public String[] ShellSort(String[] list) {
+		String[] sorted = list;
+		int in, out, h = 1;
+		int size = sorted.length;
+		String temp;
+
+		while (h <= size / 3)
+			h = h * 3 + 1;
+		while (h > 0) {
+			for (out = h; out < size; out++) {
+				temp = sorted[out];
+				in = out;
+				while (in > h - 1 && sorted[in - h].compareTo(temp) >= 0) {
+					sorted[in] = sorted[in - h];
+					in -= h;
+				}
+				sorted[in] = temp;
+			}
+			h = (h-1)/3;
+		}
+		return sorted;
+	}
+}
